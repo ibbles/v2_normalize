@@ -92,7 +92,7 @@ This tells us that multiplying by the inverse of the length is faster than divid
 
 ## Benchmark
 
-The Intel architecture code analyzer is a static tool that analyzes the binary, but doesn't actually run it. To get actual performance numbers we should run the code. Here I'm using the Google benchmarking suite[bench], running on an i7-7820X CPU @ 3.60GHz.
+The Intel architecture code analyzer is a static tool that analyzes the binary, but doesn't actually run it. To get actual performance numbers we should run the code. Here I'm using the Google benchmarking suite[bench], running on an i7-7820X CPU @ 4.0 GHz.
 
 ```
 mul_inv
@@ -128,7 +128,7 @@ BM_normalize/1024       4132 ns       4133 ns     169377
 BM_normalize/2048       8336 ns       8336 ns      83988
 ```
 
-Divinding once and multiplying twice is indeed faster. Dividing the times by the number of elements gives about 4 ns for the `div_length` version and about 3 ns for the `mul_inv` version.
+Divinding once and multiplying twice is indeed faster. Dividing the times by the number of elements gives about 3 ns for the `mul_inv` version and about 4 ns for the `div_length` version. At 4.0 GHz that corresponds to about 13 cycles for the `mul_inv` version and 16 cycles for the `div_length` version. That's fairly close to the cycle estimate given by the iaca tool.
 
 
 ## References
