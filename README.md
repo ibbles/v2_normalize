@@ -59,7 +59,7 @@ The interesting part performed by the `div_length` version is simply two divides
 
 ## Intel architecture code analyzer
 
-The Intel architecture code analyser, iaca for short, is a tool that visualizes the mapping from instructions to execution ports and port utilization. When run on the two kernel above the following is produced:
+The Intel architecture code analyser, iaca for short, is a tool that visualizes the mapping from instructions to execution ports and port utilization[iaca]. When run on the two kernel above the following is produced:
 
 ```
 mul_inv
@@ -134,4 +134,5 @@ Divinding once and multiplying twice is indeed faster. Dividing the times by the
 ## References
 
 [fog] http://www.agner.org/optimize/instruction_tables.pdf  
+[iaca] https://software.intel.com/en-us/articles/intel-architecture-code-analyzer
 [bench] https://github.com/google/benchmark
