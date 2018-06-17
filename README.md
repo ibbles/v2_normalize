@@ -128,7 +128,7 @@ BM_normalize/1024       4132 ns       4133 ns     169377
 BM_normalize/2048       8336 ns       8336 ns      83988
 ```
 
-Divinding once and multiplying twice is indeed faster. Dividing the times by the number of elements gives about 4 cycles for the div_length version and about 3 cycles for the `mul_inv` version.
+Divinding once and multiplying twice is indeed faster. Dividing the times by the number of elements gives about 4 ns for the `div_length` version and about 3 ns for the `mul_inv` version.
 
 
 ## References
