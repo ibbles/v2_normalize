@@ -133,5 +133,5 @@ Divinding once and multiplying twice is indeed faster. Dividing the times by the
 
 ## References
 
-[fog] http://www.agner.org/optimize/instruction_tables.pdf
+[fog] http://www.agner.org/optimize/instruction_tables.pdf  
 [bench] https://github.com/google/benchmark
