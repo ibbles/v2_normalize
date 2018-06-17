@@ -116,4 +116,31 @@ div_length
 |   1*     |             |      |             |             |      |      |      |      | cmp rsi, rbp
 |   0*F    |             |      |             |             |      |      |      |      | jnz 0xffffffffffffffb2
 ```
+
+Removing everything but the different parts we get the following:
+
+```
+mul_inv
+
+|   1*     |             |      |             |             |      |      |      |      | movapd xmm0, xmm3
+|   1      | 1.0     4.0 |      |             |             |      |      |      |      | divsd xmm0, xmm1
+|   1      |             |      | 1.0     1.0 |             |      |      |      |      | movsd xmm1, qword ptr [rsi]
+|   1      |             | 1.0  |             |             |      |      |      |      | mulsd xmm1, xmm0
+|   2^     |             | 1.0  |             | 1.0     1.0 |      |      |      |      | mulsd xmm0, qword ptr [rsi+0x8]
+|   2^     |             |      |             |             | 1.0  |      |      | 1.0  | movsd qword ptr [rsi], xmm1
+|   2^     |             |      |             |             | 1.0  |      |      | 1.0  | movsd qword ptr [rsi+0x8], xmm0
+```
+
+
+```
+div_length
+
+|   1      |             |      | 1.0     1.0 |             |      |      |      |      | movsd xmm0, qword ptr [rsi]
+|   1      | 1.0     4.0 |      |             |             |      |      |      |      | divsd xmm0, xmm1
+|   2^     |             |      |             |             | 1.0  |      |      | 1.0  | movsd qword ptr [rsi], xmm0
+|   1      |             |      |             | 1.0     1.0 |      |      |      |      | movsd xmm0, qword ptr [rsi+0x8]
+|   1      | 1.0     4.0 |      |             |             |      |      |      |      | divsd xmm0, xmm1
+|   2^     |             |      |             |             | 1.0  |      |      | 1.0  | movsd qword ptr [rsi+0x8], xmm0
+## References
+
 [fog] http://www.agner.org/optimize/instruction_tables.pdf
