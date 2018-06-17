@@ -89,6 +89,49 @@ Port Binding In Cycles Per Iteration:
 
 This tells us that multiplying by the inverse of the length is faster than dividing by the length directly, and that it is Port 0, the divider pipeline, that is the bottleneck in the `div_length` case since the block throughput is the same as the Port 0 utilization.
 
+
+## Benchmark
+
+The Intel architecture code analyzer is a static tool that analyzes the binary, but doesn't actually run it. To get actual performance numbers we should run the code. Here I'm using the Google benchmarking suite[bench], running on an i7-7820X CPU @ 3.60GHz.
+
+```
+mul_inv
+
+---------------------------------------------------------
+Benchmark                  Time           CPU Iterations
+---------------------------------------------------------
+BM_normalize/8            21 ns         21 ns   32638163
+BM_normalize/16           44 ns         44 ns   15942537
+BM_normalize/32          101 ns        101 ns    6913534
+BM_normalize/64          202 ns        202 ns    3464931
+BM_normalize/128         407 ns        407 ns    1718113
+BM_normalize/256         811 ns        811 ns     863501
+BM_normalize/512        1616 ns       1616 ns     432976
+BM_normalize/1024       3225 ns       3225 ns     217184
+BM_normalize/2048       6492 ns       6492 ns     107797
+```
+
+```
+div_length
+
+---------------------------------------------------------
+Benchmark                  Time           CPU Iterations
+---------------------------------------------------------
+BM_normalize/8            28 ns         28 ns   24740613
+BM_normalize/16           57 ns         57 ns   12407197
+BM_normalize/32          137 ns        137 ns    5118732
+BM_normalize/64          259 ns        259 ns    2702066
+BM_normalize/128         521 ns        521 ns    1344022
+BM_normalize/256        1037 ns       1037 ns     675255
+BM_normalize/512        2071 ns       2071 ns     337887
+BM_normalize/1024       4132 ns       4133 ns     169377
+BM_normalize/2048       8336 ns       8336 ns      83988
+```
+
+Divinding once and multiplying twice is indeed faster. Dividing the times by the number of elements gives about 4 cycles for the div_length version and about 3 cycles for the `mul_inv` version.
+
+
 ## References
 
 [fog] http://www.agner.org/optimize/instruction_tables.pdf
+[bench] https://github.com/google/benchmark
