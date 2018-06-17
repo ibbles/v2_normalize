@@ -57,4 +57,63 @@ The interesting part performed by the `mul_inv` version is then a divide and two
 
 The interesting part performed by the `div_length` version is simply two divides. There is no dependency between them, but there is only one execution port for divides, so we must wait 4 cycles of issue latency before the second can start. The total becomes 8 cyles since there are here no dependencies on the result of the divides.
 
+## Intel architecture code analyzer
+
+The Intel architecture code analyser, iaca for short, is a tool that visualizes the mapping from instructions to execution ports and port utilization. When run on the two kernel above the following is produced:
+
+```
+mul_inv
+
+| Num Of   |                    Ports pressure in cycles                         |      |
+|  Uops    |  0  - DV    |  1   |  2  -  D    |  3  -  D    |  4   |  5   |  6   |  7   |
+-----------------------------------------------------------------------------------------
+|   1      |             |      | 1.0     1.0 |             |      |      |      |      | movsd xmm0, qword ptr [rsi]
+|   1      |             |      |             | 1.0     1.0 |      |      |      |      | movsd xmm1, qword ptr [rsi+0x8]
+|   1      |             | 1.0  |             |             |      |      |      |      | mulsd xmm0, xmm0
+|   1      |             | 1.0  |             |             |      |      |      |      | mulsd xmm1, xmm1
+|   1      | 0.5         | 0.5  |             |             |      |      |      |      | addsd xmm0, xmm1
+|   1      | 1.0         |      |             |             |      |      |      |      | ucomisd xmm2, xmm0
+|   1      | 1.0     6.0 |      |             |             |      |      |      |      | sqrtsd xmm1, xmm0
+|   1      |             |      |             |             |      |      | 1.0  |      | jnbe 0x3d
+|   1      | 1.0         |      |             |             |      |      |      |      | ucomisd xmm1, xmm2
+|   1      |             |      |             |             |      |      | 1.0  |      | jbe 0x20
+|   1*     |             |      |             |             |      |      |      |      | movapd xmm0, xmm3
+|   1      | 1.0     4.0 |      |             |             |      |      |      |      | divsd xmm0, xmm1
+|   1      |             |      | 1.0     1.0 |             |      |      |      |      | movsd xmm1, qword ptr [rsi]
+|   1      |             | 1.0  |             |             |      |      |      |      | mulsd xmm1, xmm0
+|   2^     |             | 1.0  |             | 1.0     1.0 |      |      |      |      | mulsd xmm0, qword ptr [rsi+0x8]
+|   2^     |             |      |             |             | 1.0  |      |      | 1.0  | movsd qword ptr [rsi], xmm1
+|   2^     |             |      |             |             | 1.0  |      |      | 1.0  | movsd qword ptr [rsi+0x8], xmm0
+|   1      |             |      |             |             |      | 1.0  |      |      | add rsi, 0x10
+|   1*     |             |      |             |             |      |      |      |      | cmp rsi, rbp
+|   0*F    |             |      |             |             |      |      |      |      | jnz 0xffffffffffffffae
+```
+
+
+```
+div_length
+
+| Num Of   |                    Ports pressure in cycles                         |      |
+|  Uops    |  0  - DV    |  1   |  2  -  D    |  3  -  D    |  4   |  5   |  6   |  7   |
+-----------------------------------------------------------------------------------------
+|   1      |             |      | 1.0     1.0 |             |      |      |      |      | movsd xmm0, qword ptr [rsi]
+|   1      |             |      |             | 1.0     1.0 |      |      |      |      | movsd xmm1, qword ptr [rsi+0x8]
+|   1      |             | 1.0  |             |             |      |      |      |      | mulsd xmm0, xmm0
+|   1      |             | 1.0  |             |             |      |      |      |      | mulsd xmm1, xmm1
+|   1      |             | 1.0  |             |             |      |      |      |      | addsd xmm0, xmm1
+|   1      | 1.0         |      |             |             |      |      |      |      | ucomisd xmm2, xmm0
+|   1      | 1.0     6.0 |      |             |             |      |      |      |      | sqrtsd xmm1, xmm0
+|   1      |             |      |             |             |      |      | 1.0  |      | jnbe 0x39
+|   1      | 1.0         |      |             |             |      |      |      |      | ucomisd xmm1, xmm2
+|   1      |             |      |             |             |      |      | 1.0  |      | jbe 0x1c
+|   1      |             |      | 1.0     1.0 |             |      |      |      |      | movsd xmm0, qword ptr [rsi]
+|   1      | 1.0     4.0 |      |             |             |      |      |      |      | divsd xmm0, xmm1
+|   2^     |             |      |             |             | 1.0  |      |      | 1.0  | movsd qword ptr [rsi], xmm0
+|   1      |             |      |             | 1.0     1.0 |      |      |      |      | movsd xmm0, qword ptr [rsi+0x8]
+|   1      | 1.0     4.0 |      |             |             |      |      |      |      | divsd xmm0, xmm1
+|   2^     |             |      |             |             | 1.0  |      |      | 1.0  | movsd qword ptr [rsi+0x8], xmm0
+|   1      |             |      |             |             |      | 1.0  |      |      | add rsi, 0x10
+|   1*     |             |      |             |             |      |      |      |      | cmp rsi, rbp
+|   0*F    |             |      |             |             |      |      |      |      | jnz 0xffffffffffffffb2
+```
 [fog] http://www.agner.org/optimize/instruction_tables.pdf
