@@ -1,6 +1,8 @@
 # v2_normalize
 A performance analysis of v2 normalization.
 
+## Introduction
+
 Here, v2 is the name of a two-dimensional double precision vector implemented as follows:
 
 ```c++
@@ -12,9 +14,14 @@ struct v2 {
 
 Normalization is the act of altering `x` and `y` so that the length of the vector, `sqrt(x*x + y*y)`, becomes 1.0. This is achieved by dividing both `x` and `y` by the current length.
 
+## Multiplication vs division
+
 It is commonly known that multiplication is faster than division for floating point values. Turning to Agner Fog's instruction tables[fog] we read that on Intel Skylake MULSD, MULtiply Single Double precision, has a dependency latency of 4 cycles, an issue latency of 1 cycle (or less) and can go to one of two execution ports. DIVSD, on the other hand, has 13-14 cycles of dependency latency, 4 cycles of issue latency and only one compatible execution port.
 
 Since a v2 normalizaion requires two divisions by the same value, the vector length, it is tempting to compute the inverse of the length and perform two multiplications instead. Compare the following two implementations of a normalization kernel:
+
+
+## Kernel implementations
 
 ```c++
 void normalize_mul_inv(int N, v2* d) {
@@ -43,6 +50,8 @@ void normalize_div_length(int N, v2* d) {
 ```
 
 Which one of these can we expect to be faster? For now we assume that the loop overhead and the length calculation are identical in both versions, and that the vetor length is never zero.
+
+## Cycle estimation
 
 The interesting part performed by the `mul_inv` version is then a divide and two multiplications that depend on the divide but not on each other. As stated in the introduction, the divide has a dependency latency of 13-14 cycles and the multiplication as two execution ports and can therefore be done in parallel, with an issue latency of 1 cycle. The total becomes 14-15 cycles.
 
